@@ -16,7 +16,7 @@ Sin variables de entorno se inicia en modo local: los datos se guardan en el nav
 ## Supabase
 
 1. Crear un proyecto de desarrollo.
-2. Ejecutar `supabase/migrations/202610270001_events.sql` en el editor SQL o mediante el CLI de Supabase.
+2. Ejecutar los archivos de `supabase/migrations/` en orden de nombre en el editor SQL o mediante el CLI de Supabase. Para una base existente, ejecutar solo las migraciones pendientes. La migración `202610300001_events_grants.sql` concede acceso a la tabla al rol autenticado; las políticas RLS siguen limitando cada usuario a sus propios eventos.
 3. Copiar `.env.example` a `.env.local` y completar la URL del proyecto y su clave pública anon. Nunca usar la clave service_role en el frontend.
 4. Habilitar acceso por correo en Supabase Auth y configurar la URL del sitio y sus redirecciones autorizadas.
 5. Reiniciar Vite; iniciar sesión mediante enlace por correo.
@@ -49,3 +49,7 @@ Pendiente antes de un lanzamiento completo: sincronización Google Calendar/OAut
 Los movimientos financieros actualmente son editables; no utilizar como registro contable definitivo hasta implementar auditoría y correcciones trazables. Las tarifas de músicos se incluyen en previsión y sus pagos en caja: no repetirlos como gastos.
 
 Ver [especificación completa](docs/requerimientos.md).
+
+## Google Calendar: preferencias y detección de cruces
+
+La pestaña Google Calendar permite conectar una sesión de Google, guardar el calendario principal y seleccionar calendarios de consulta. Consulta [la guía de configuración](docs/google-calendar.md). Es independiente del inicio de sesión. La sincronización y la renovación automática del acceso en backend siguen pendientes.

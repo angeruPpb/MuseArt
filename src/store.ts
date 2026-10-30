@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Event } from './domain';
-const env = (import.meta as unknown as {env:Record<string,string>}).env;
+const env = import.meta.env;
 export const supabase = env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY ? createClient(env.VITE_SUPABASE_URL,env.VITE_SUPABASE_ANON_KEY) : null;
 const key='museart.events.v1';
 export async function loadEvents():Promise<Event[]> { if(!supabase) return JSON.parse(localStorage.getItem(key)||'[]'); const {data,error}=await supabase.from('events').select('data').order('updated_at',{ascending:false}); if(error) throw error; return data.map(row=>row.data as Event); }

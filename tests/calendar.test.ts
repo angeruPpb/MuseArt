@@ -1,0 +1,10 @@
+import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
+vi.mock('../src/store',()=>({supabase:null}));
+async function setup(){vi.stubEnv('VITE_GOOGLE_CLIENT_ID','test-client');vi.stubGlobal('window',{google:{accounts:{oauth2:{initTokenClient:({callback}: {callback:(r:unknown)=>void})=>({requestAccessToken:()=>callback({access_token:'test-access',expires_in:3600})}),revoke:vi.fn()}}}});const module=await import('../src/calendar');await module.connectGoogle();return module;}
+beforeEach(()=>vi.resetModules());afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
+describe('Google Calendar',()=>{
+ it('pagina todos los calendarios y envía autorización',async()=>{const api=await setup();const fetch=vi.fn().mockResolvedValueOnce(Response.json({items:[{id:'a'}],nextPageToken:'next'})).mockResolvedValueOnce(Response.json({items:[{id:'b'}]}));vi.stubGlobal('fetch',fetch);expect(await api.listCalendars()).toEqual([{id:'a'},{id:'b'}]);expect(fetch.mock.calls[1][0]).toContain('pageToken=next');expect(fetch.mock.calls[0][1].headers.Authorization).toBe('Bearer test-access');});
+ it('consulta calendarios seleccionados sin duplicarlos y descarta eventos libres',async()=>{const api=await setup();const fetch=vi.fn().mockImplementation(async()=>Response.json({items:[{id:'1',summary:'Ensayo'},{id:'2',status:'cancelled'},{id:'3',transparency:'transparent'}]}));vi.stubGlobal('fetch',fetch);const {blankEvent}=await import('../src/domain');const conflicts=await api.calendarConflicts({...blankEvent(),start:'2026-11-01T10:00',end:'2026-11-01T11:00'},{primary:'main',availability:['main','other']});expect(conflicts).toHaveLength(2);expect(fetch).toHaveBeenCalledTimes(2);});
+ it('rechaza una consulta sin autorización sin afirmar que no hay cruces',async()=>{const api=await setup();api.disconnectGoogle();await expect(api.listCalendars()).rejects.toThrow('Conecta Google Calendar');});
+ it('invalida una sesión rechazada por Google',async()=>{const api=await setup();vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('',{status:401})));await expect(api.listCalendars()).rejects.toThrow('401');expect(api.hasGoogleAccess()).toBe(false);});
+});
