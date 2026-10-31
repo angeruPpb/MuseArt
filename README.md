@@ -53,3 +53,5 @@ Ver [especificación completa](docs/requerimientos.md).
 ## Google Calendar: preferencias y detección de cruces
 
 La pestaña Google Calendar permite conectar una sesión de Google, guardar el calendario principal y seleccionar calendarios de consulta. Consulta [la guía de configuración](docs/google-calendar.md). Es independiente del inicio de sesión. La sincronización y la renovación automática del acceso en backend siguen pendientes.
+
+La pestaña Google Calendar también muestra eventos del calendario principal por fechas y permite importar actuaciones individuales a Agenda sin duplicarlas ni sobrescribir datos existentes. Requiere conexión Google activa y Supabase configurado; no necesita una migración adicional. Los eventos recurrentes y de día completo se muestran solo para consulta.

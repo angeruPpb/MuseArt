@@ -18,9 +18,19 @@
 - Al guardar un evento, se consultan los eventos que se superponen en el calendario principal y los adicionales. Se ignoran eventos cancelados y transparentes. El usuario puede guardar aunque exista una coincidencia.
 - Si Google rechaza la consulta o el acceso caduca, la aplicación informa de que no pudo comprobar disponibilidad y permite guardar igualmente.
 - Actualmente se requieren calendarios con lectura de detalles (reader, writer u owner); no se admiten calendarios que solo expongan free/busy.
-- No se importan ni escriben eventos en Google todavía. El calendario principal se registra como preferencia para la futura sincronización.
+- Se consultan los eventos del calendario principal por intervalo y se importan los seleccionados a MuseArt. Se conservan sus identificadores externos; repetir una importación no sobrescribe la información local. No se escriben cambios en Google todavía.
 - Al cambiar de cuenta Google, revisar y guardar de nuevo los calendarios seleccionados. Una selección inaccesible produce una advertencia al comprobar disponibilidad, nunca se interpreta como libre.
 
 ## Verificación manual con cuentas reales
 
 Crear un evento en un calendario adicional y luego una actuación con el mismo horario en MuseArt: debe aparecer una advertencia que permita guardar. Repetir sin solapamiento, con autorización caducada y con acceso revocado. Confirmar que un segundo usuario no puede leer ni modificar las preferencias del primero. La validación automatizada usa respuestas simuladas, no demuestra configuración OAuth ni RLS en un proyecto remoto.
+
+## Ver e importar eventos
+
+Después de conectar y guardar el calendario principal aparece “Eventos de tu calendario principal”. Por defecto se consultan tres meses anteriores y doce posteriores; las fechas pueden modificarse. El botón Consultar / actualizar vuelve a leer Google, sin modificar los eventos ya importados.
+
+Selecciona actuaciones individuales con horario y pulsa Importar seleccionados. Aparecerán en Agenda con título, ubicación y horario local del dispositivo. La descripción de Google se muestra como texto en la vista previa y se conserva separada de las notas privadas. Los datos de cliente, dinero y producción quedan vacíos para completarlos.
+
+Los eventos de día completo y las instancias recurrentes son visibles pero no importables en esta versión. Los eventos cancelados no se incluyen. La importación exige sesión Supabase. No hay nueva migración SQL para esta función: utiliza la tabla events y sus permisos existentes. Cada importación tiene una identidad estable por usuario, calendario y evento; los reintentos se ignoran si el registro ya existe. No hay actualización automática de fechas importadas ni propagación de eliminaciones de Google.
+
+Validación manual: conectar una cuenta real, guardar calendario, consultar un rango con eventos, importar dos actuaciones, comprobarlas en Agenda, editar sus finanzas y repetir la importación; las finanzas deben conservarse y no debe aparecer un duplicado. Una consulta fallida debe mostrar el error, no un calendario vacío. Probar desde otra cuenta para comprobar el aislamiento RLS.

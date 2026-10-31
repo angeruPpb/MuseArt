@@ -1,0 +1,8 @@
+import {describe,it,expect,vi} from 'vitest';
+import {googleImportId,toMuseArtEvent,importBlockReason} from '../src/calendarImport';
+const source={id:'google-1',summary:'Concierto',location:'Teatro',description:'<script>private</script>',start:{dateTime:'2026-11-12T19:00:00-05:00'},end:{dateTime:'2026-11-12T21:00:00-05:00'}};
+describe('importación de Calendar',()=>{
+ it('produce la misma identidad al reintentar y separa cuentas y calendarios',async()=>{const id=await googleImportId('user','calendar',source.id);expect(await googleImportId('user','calendar',source.id)).toBe(id);expect(await googleImportId('other','calendar',source.id)).not.toBe(id);expect(await googleImportId('user','other',source.id)).not.toBe(id);expect(id).toMatch(/^[a-f0-9]{8}-[a-f0-9]{4}-5[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);});
+ it('conserva vínculo, fecha original y detalles sin inventar datos financieros',async()=>{const e=await toMuseArtEvent('user','calendar',source);expect(e.title).toBe('Concierto');expect(e.google?.originalStart).toBe(source.start.dateTime);expect(new Date(e.start).getTime()).toBe(new Date(source.start.dateTime).getTime());expect(e.price).toBe(0);expect(e.receipts).toEqual([]);expect(e.notes).toBe('');expect(e.google?.description).toBe(source.description);});
+ it('rechaza día completo, recurrencias y fechas inválidas',async()=>{expect(importBlockReason({...source,start:{date:'2026-11-12'}})).toContain('día completo');expect(importBlockReason({...source,recurringEventId:'series'})).toContain('recurrente');await expect(toMuseArtEvent('user','calendar',{...source,end:{dateTime:'invalid'}})).rejects.toThrow('horario válido');});
+});
